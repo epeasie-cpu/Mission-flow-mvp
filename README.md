@@ -29,6 +29,17 @@ npm run dev
 
 `npm run lint` includes the lane rule: a work-path file cannot import the oversight path, and neither lane can reach past `src/core/index.ts`.
 
+## Seed and sign-in
+
+```bash
+npm run seed
+npm run seed -- --reset
+```
+
+`npm run seed` loads the fictional awards pilot: sample units, personas at `@example.test`, one live registry entry for an awards worksheet, and taskers built through the same commands the app uses. If that sample org is already present, the command leaves the database alone. `npm run seed -- --reset` runs the owner-only demo reset (`DATABASE_URL_OWNER`, role `mf_owner`) and loads the pilot again. Federal holidays are not wiped.
+
+Open http://localhost:3000/sign-in, pick a persona, and enter `DEMO_PASSCODE` from `.env.local`. The session cookie stores who you are and which role you are acting as. A wrong passcode is refused. A role the persona does not hold cannot be selected.
+
 ## CI
 
 GitHub Actions runs typecheck, lint (including the lane rule), unit tests, the verify scripts, and the banned-name check. It also migrates a Postgres 16 service and runs the app-role check.
