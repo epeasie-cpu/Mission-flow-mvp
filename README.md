@@ -38,7 +38,7 @@ npm run seed -- --reset
 
 `npm run seed` loads the fictional awards pilot: sample units, personas at `@example.test`, one live registry entry for an awards worksheet, and taskers built through the same commands the app uses. If that sample org is already present, the command leaves the database alone. `npm run seed -- --reset` runs the owner-only demo reset (`DATABASE_URL_OWNER`, role `mf_owner`) and loads the pilot again. Federal holidays are not wiped.
 
-Open http://localhost:3000/sign-in, pick a persona, and enter `DEMO_PASSCODE` from `.env.local`. The session cookie stores who you are and which role you are acting as. A wrong passcode is refused. A role the persona does not hold cannot be selected.
+Open http://localhost:3000/sign-in, pick a persona, and enter `DEMO_PASSCODE` from `.env.local`. A successful sign-in lands on the work list or the oversight summary, depending on the acting role. The session bar shows who you are and lets you switch roles or sign out. Work and oversight stay behind that session. A wrong passcode is refused. A role the persona does not hold cannot be selected.
 
 ## CI
 

@@ -20,7 +20,10 @@ export {
 } from "../config/missionflow.config";
 
 export { Conflict, Forbidden, InvalidTransition, NotFound, ValidationError } from "./errors";
-export { SESSION_COOKIE, actorFromSession, listPersonas, readSessionFromSeal, sessionPassword, signInAsPersona, signOut, switchActingRole } from "./auth";
+export { SESSION_COOKIE, actorFromSession, listPersonas, loadPersona, readSessionFromSeal, sessionPassword, signInAsPersona, signOut, switchActingRole } from "./auth";
+export type { Actor, Session } from "./actor";
+export type { CoreDb } from "./db";
+export * as reads from "./reads";
 export { auditForTasker, clearSubscribers, dispatchOutbox, subscribe, verifyChain } from "./audit";
 export { MATRIX, MATRIX_COLUMNS, MATRIX_ROLES, can, matrixDecision } from "./policy";
 export { businessDayStartUtc, computeSuspensePlan, subtractBusinessDays } from "./suspense";
