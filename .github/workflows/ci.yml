@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: mf_super
+          POSTGRES_PASSWORD: mf_super_local_only
+          POSTGRES_DB: missionflow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mf_super -d missionflow"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL_SUPER: postgres://mf_super:mf_super_local_only@localhost:5432/missionflow
+      DATABASE_URL_OWNER: postgres://mf_owner:mf_owner@localhost:5432/missionflow
+      DATABASE_URL: postgres://mf_app:mf_app@localhost:5432/missionflow
+      MF_BUSINESS_TZ: America/Chicago
+      # Optional. An empty secret still lets the banned-name check pass.
+      MF_DENYLIST: ${{ secrets.MF_DENYLIST }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run verify:config
+      - run: npm run verify:db
+      - run: npm run check:banned
+      - run: npm run db:prepare
+      - run: npm run db:migrate
+      - run: npm run verify:pg

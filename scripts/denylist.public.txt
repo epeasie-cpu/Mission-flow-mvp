@@ -1,0 +1,20 @@
+# MissionFlow banned-pattern list (PUBLIC, committed). One JavaScript regex per line, case-insensitive.
+# Real-unit/person names that must not be published even here go in the PRIVATE list:
+#   - local:  .denylist.local (gitignored)
+#   - CI:     MF_DENYLIST secret (newline- or |-separated; MF_BANNED_NAMES is an alias)
+# Spec §7.1/§7.2: charter pilot unit name + designator, .mil emails, real base names.
+
+# Government email / domains
+[a-z0-9._%+-]+@[a-z0-9.-]+\.mil\b
+\.mil\b
+# Any email that is not @example.test (seed/fixtures must use example.test)
+[a-z0-9._%+-]+@(?!example\.test\b)[a-z0-9-]+\.[a-z.]{2,}
+# Real installations (generic patterns; extend with specific base names in the private list)
+\bAir Force Base\b
+\bAFB\b
+\bJoint Base\b
+\bAir Logistics Complex\b
+# Lines prefixed 'cs:' are case-SENSITIVE.
+# Real numbered units: "12th Something Wing/Group/Squadron" or "123 ABC" designators
+cs:\b\d{1,3}(st|nd|rd|th)\s+([A-Z][a-z]+\s+){1,5}(Wing|Group|Squadron|Flight|Center)\b
+cs:(?<![\w:-])\d{2,4}(st|nd|rd|th)?\s+[A-Z]{3,5}\b(?!\s*(Bytes|KB|MB|GB))

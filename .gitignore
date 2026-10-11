@@ -147,3 +147,7 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# MissionFlow: private name list and the charter never enter the repo
+.denylist.local
+MissionFlow-charter-*

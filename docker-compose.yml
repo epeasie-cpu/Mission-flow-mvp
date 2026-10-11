@@ -1,0 +1,14 @@
+# Local dev only. Postgres 16. A later deploy uses a separate team; nothing here is deployed.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: mf_super
+      POSTGRES_PASSWORD: mf_super_local_only
+      POSTGRES_DB: missionflow
+    ports: ["5433:5432"]
+    volumes:
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+      - mf_pgdata:/var/lib/postgresql/data
+volumes:
+  mf_pgdata:
