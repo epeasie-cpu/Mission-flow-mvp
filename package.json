@@ -1,0 +1,48 @@
+{
+  "name": "missionflow",
+  "private": true,
+  "version": "0.0.0",
+  "description": "MissionFlow shared core. Synthetic data only.",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . && npm run lint:boundaries",
+    "lint:boundaries": "depcruise src --config .dependency-cruiser.cjs && node scripts/check-boundary-fixtures.mjs",
+    "check:banned": "node scripts/check-banned-names.mjs",
+    "db:generate": "drizzle-kit generate",
+    "db:prepare": "tsx scripts/prepare-db.ts",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:up": "docker compose up -d db",
+    "verify:db": "node scripts/verify-schema-pglite.mjs",
+    "verify:config": "TZ=UTC tsx scripts/verify-config.ts && TZ=Asia/Tokyo tsx scripts/verify-config.ts && TZ=America/Los_Angeles tsx scripts/verify-config.ts",
+    "verify:pg": "tsx scripts/verify-app-role.ts",
+    "verify:all": "npm run typecheck && npm run verify:config && npm run verify:db && npm run check:banned",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.4",
+    "next": "^15.5.4",
+    "pg": "^8.23.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@eslint/eslintrc": "^3.3.1",
+    "@types/node": "^20.19.43",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "dependency-cruiser": "^16.10.4",
+    "drizzle-kit": "^0.31.11",
+    "eslint": "^9.36.0",
+    "eslint-config-next": "^15.5.4",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}
