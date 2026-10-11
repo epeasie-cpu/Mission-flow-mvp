@@ -6,6 +6,7 @@ import { createHarness, resetDemo, type Harness } from "../test/harness";
 import { landingFor } from "./landing";
 
 process.env.DEMO_PASSCODE = "demo-pass-test";
+process.env.SESSION_SECRET = "0123456789abcdef0123456789abcdef";
 
 describe("signed-in walkthrough", () => {
   let harness: Harness;
