@@ -20,10 +20,12 @@
     "verify:config": "TZ=UTC tsx scripts/verify-config.ts && TZ=Asia/Tokyo tsx scripts/verify-config.ts && TZ=America/Los_Angeles tsx scripts/verify-config.ts",
     "verify:pg": "tsx scripts/verify-app-role.ts",
     "verify:all": "npm run typecheck && npm run verify:config && npm run verify:db && npm run check:banned",
-    "test": "vitest run"
+    "test": "vitest run",
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.4",
+    "iron-session": "^9.0.1",
     "next": "^15.5.4",
     "pg": "^8.23.1",
     "react": "^19.1.1",

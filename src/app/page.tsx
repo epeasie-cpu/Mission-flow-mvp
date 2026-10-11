@@ -11,6 +11,7 @@ export default function HomePage() {
       <nav className="nav">
         <Link href="/work">Work path</Link>
         <Link href="/oversight">Oversight path</Link>
+        <Link href="/sign-in">Sign in</Link>
       </nav>
       <section className="card">
         <p>

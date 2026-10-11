@@ -49,3 +49,8 @@ h1 { font-size: 2rem; line-height: 1.2; margin-bottom: 0.5rem; }
   padding: 1rem 1.1rem;
   background: white;
 }
+
+.stack { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; }
+.stack label { display: flex; flex-direction: column; gap: 0.25rem; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.9rem; }
+.stack input, .stack select, .stack button { font: inherit; padding: 0.4rem 0.5rem; }
+.stack button { align-self: start; background: var(--accent); color: white; border: 0; border-radius: 0.35rem; cursor: pointer; }
