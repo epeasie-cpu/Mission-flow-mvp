@@ -124,6 +124,16 @@ export async function switchActingRole(db: CoreDb, session: Session, role: strin
   return { session: next, seal: await sealSession(next) };
 }
 
+export async function loadPersona(
+  db: CoreDb,
+  userId: string,
+  actingRole?: string,
+): Promise<{ session: Session; billetLabel: string } | null> {
+  const [user] = await db.select().from(appUser).where(eq(appUser.id, userId)).limit(1);
+  if (!user || !user.isActive) return null;
+  return { session: await toSession(db, userId, actingRole), billetLabel: user.billetLabel ?? "" };
+}
+
 export async function signOut(db: CoreDb, session: Session): Promise<void> {
   await writeAudit(db, { type: "user", userId: session.userId, actingRole: session.actingRole }, {
     eventType: "auth.signed_out",

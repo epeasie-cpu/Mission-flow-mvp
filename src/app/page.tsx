@@ -5,8 +5,8 @@ export default function HomePage() {
     <main>
       <h1>MissionFlow</h1>
       <p className="lede">
-        Shared core for a synthetic tasking demo. Personas, the audit trail, and both lanes
-        are built on this database. Nothing here is operational.
+        Shared core for a synthetic tasking demo. Sign in as a persona to open the work list
+        or the oversight summary. Nothing here is operational.
       </p>
       <nav className="nav">
         <Link href="/work">Work path</Link>
