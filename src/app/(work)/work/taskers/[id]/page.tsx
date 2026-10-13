@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { actorFromSession, NotFound, runtimeDb } from "@/core";
+import { actorFromSession, listRoutingBatch, listStoredDocuments, NotFound, runtimeDb } from "@/core";
 import { loadWorkTasker } from "@/lanes/work";
 import { roleLabel } from "../../../../landing";
 import { requireAppSession } from "../../../../session";
-import { Panel, StateBadge, SuspenseReadout } from "../../../../ui";
-import { acceptTaskerAction } from "../../actions";
+import { DemoUploadWarning, Panel, StateBadge, SuspenseReadout } from "../../../../ui";
+import { acceptTaskerAction, uploadTaskerFileAction } from "../../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ export default async function TaskerPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ notice?: string }>;
+  searchParams: Promise<{ notice?: string; count?: string }>;
 }) {
   const { id } = await params;
   const query = await searchParams;
@@ -30,11 +30,17 @@ export default async function TaskerPage({
   }
   const { tasker } = detail;
   const conflict = tasker.state === "SUSPENSE_CONFLICT" || Boolean(detail.plan?.conflict);
+  const actor = actorFromSession(app.session);
+  const [files, batch] = await Promise.all([
+    listStoredDocuments(runtimeDb(), actor, tasker.id),
+    listRoutingBatch(runtimeDb(), tasker.id),
+  ]);
   return (
     <main>
       <p className="crumb">
         <Link href="/work">All taskers</Link>
       </p>
+      <div className="tasker-top">
       <Panel hud>
         <div className="title-row">
           <p className="ref">{tasker.ref}</p>
@@ -44,6 +50,13 @@ export default async function TaskerPage({
         <h1>{tasker.title}</h1>
         {query.notice === "accepted" ? <p className="notice">Accepted. The audit log records tasker.accepted.</p> : null}
         {query.notice === "accept-failed" ? <p className="notice">Accept was not applied for this role or state.</p> : null}
+        {query.notice === "routed" ? (
+          <p className="notice">
+            Routed to {query.count ?? "the matched"} action officers. Chain notices are in the notification center, and simulated email is in the outbox.
+          </p>
+        ) : null}
+        {query.notice === "uploaded" ? <p className="notice">Document stored. The audit log records stored_document.uploaded.</p> : null}
+        {query.notice === "upload-failed" ? <p className="notice">That file was not stored. Use an allowed type under 10 MB.</p> : null}
         {detail.mayAccept ? (
           <form action={acceptTaskerAction} className="accept">
             <input type="hidden" name="taskerId" value={tasker.id} />
@@ -105,6 +118,53 @@ export default async function TaskerPage({
           ) : null}
         </dl>
       </Panel>
+      <section>
+      <h2>Documents</h2>
+      <DemoUploadWarning />
+      {files.length === 0 ? <p className="meta">No files on this tasker yet.</p> : null}
+      <ul className="file-list">
+        {files.map((file) => (
+          <li key={file.id} className="file-card">
+            <p>
+              <a href={`/files/${file.id}?download=1`}>{file.fileName}</a>
+              <span className="meta">
+                {" "}
+                · {file.mime} · {file.byteSize.toLocaleString()} bytes · {file.sha256.slice(0, 12)}
+              </span>
+            </p>
+            {file.mime.startsWith("image/") ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={`/files/${file.id}`} alt={file.fileName} />
+            ) : null}
+            {file.mime === "application/pdf" ? (
+              <iframe className="preview-frame" title={file.fileName} src={`/files/${file.id}`} />
+            ) : null}
+          </li>
+        ))}
+      </ul>
+      <form action={uploadTaskerFileAction} className="stack">
+        <input type="hidden" name="taskerId" value={tasker.id} />
+        <label>
+          <span>Add a file</span>
+          <input name="file" type="file" required accept=".pdf,.docx,.xlsx,.pptx,.png,.jpg,.jpeg,.gif,.webp,.txt,application/pdf,text/plain,image/*" />
+        </label>
+        <button type="submit">Upload</button>
+      </form>
+      </section>
+      </div>
+      {batch.length > 1 ? (
+        <>
+          <h2>Also tasked</h2>
+          <ul className="match-list">
+            {batch.map((mate) => (
+              <li key={mate.id}>
+                <Link href={`/work/taskers/${mate.id}`}>{mate.ref}</Link>
+                <span className="meta"> · {mate.aoName ?? "Unassigned"}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
       <h2>Requirement</h2>
       {tasker.contentRedacted ? (
         <p className="panel">The requirement is withheld for {roleLabel(app.session.actingRole)}.</p>

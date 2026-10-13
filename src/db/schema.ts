@@ -26,6 +26,7 @@ import {
   bigserial,
   boolean,
   check,
+  customType,
   date,
   index,
   integer,
@@ -54,6 +55,42 @@ const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull(
 const isSynthetic = () => boolean("is_synthetic").notNull().default(true);
 const syntheticCheck = (table: string, col: AnyPgColumn) =>
   check(`${table}_is_synthetic_ck`, sql`${col} = true`);
+
+/** Postgres bytea. Pitch-demo file bytes live in stored_document, not object storage. */
+export const bytea = customType<{ data: Buffer; driverData: Buffer | Uint8Array }>({
+  dataType() {
+    return "bytea";
+  },
+  toDriver(value: Buffer) {
+    return value;
+  },
+  fromDriver(value: Buffer | Uint8Array): Buffer {
+    return Buffer.isBuffer(value) ? value : Buffer.from(value);
+  },
+});
+
+/** Criteria captured when a tasker is auto-routed to action officers. */
+export type RoutingCriteria = {
+  orgIds: string[];
+  afscs: string[];
+  duty: string;
+  additionalDuty: string;
+  userIds: string[];
+};
+
+export const STORED_DOCUMENT_MIMES = [
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "image/png",
+  "image/jpeg",
+  "image/gif",
+  "image/webp",
+  "text/plain",
+] as const;
+
+export const STORED_DOCUMENT_MAX_BYTES = 10 * 1024 * 1024;
 
 // ---------------------------------------------------------------------------
 // Enums
@@ -158,6 +195,14 @@ export const appUser = pgTable(
     email: text("email").notNull().unique(),
     orgId: uuid("org_id").notNull().references(() => org.id),
     billetLabel: text("billet_label"), // shown on persona picker (§3.4)
+    rank: text("rank"),
+    afsc: text("afsc"),
+    primaryDuty: text("primary_duty"),
+    functions: text("functions").array().notNull().default(sql`'{}'::text[]`),
+    supervisorUserId: uuid("supervisor_user_id").references((): AnyPgColumn => appUser.id),
+    leadershipTitle: text("leadership_title"),
+    /** Pitch-demo personas pinned to the top of the sign-in picker. */
+    featured: boolean("featured").notNull().default(false),
     availability: availabilityEnum("availability").notNull().default("available"),
     isActive: boolean("is_active").notNull().default(true),
     isSynthetic: isSynthetic(),
@@ -166,6 +211,27 @@ export const appUser = pgTable(
   (t) => [
     syntheticCheck("app_user", t.isSynthetic),
     check("app_user_email_domain_ck", sql`${t.email} like '%@example.test'`),
+    index("app_user_org_idx").on(t.orgId),
+    index("app_user_supervisor_idx").on(t.supervisorUserId),
+  ],
+);
+
+/** Additional duties (Awards Monitor, Unit Deployment Manager, …). End a duty; do not delete it. */
+export const additionalDuty = pgTable(
+  "additional_duty",
+  {
+    id: id(),
+    userId: uuid("user_id").notNull().references(() => appUser.id),
+    name: text("name").notNull(),
+    endedAt: timestamp("ended_at", { withTimezone: true }),
+    isSynthetic: isSynthetic(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    syntheticCheck("additional_duty", t.isSynthetic),
+    check("additional_duty_name_ck", sql`length(trim(${t.name})) > 0`),
+    uniqueIndex("additional_duty_active_uq").on(t.userId, sql`lower(${t.name})`).where(sql`${t.endedAt} is null`),
+    index("additional_duty_user_idx").on(t.userId),
   ],
 );
 
@@ -315,6 +381,8 @@ export const tasker = pgTable(
     state: taskerStateEnum("state").notNull().default("DRAFT"), // only src/core/lifecycle writes this
     registryEntryId: uuid("registry_entry_id").references(() => registryEntry.id),
     matchSnapshot: jsonb("match_snapshot").$type<MatchSnapshot>(),
+    routingBatchId: uuid("routing_batch_id"),
+    routingCriteria: jsonb("routing_criteria").$type<RoutingCriteria>(),
     currentSuspensePlanId: uuid("current_suspense_plan_id").references((): AnyPgColumn => suspensePlan.id),
     originatorId: uuid("originator_id").notNull().references(() => appUser.id),
     taskingAuthorityId: uuid("tasking_authority_id").references(() => appUser.id),
@@ -370,6 +438,7 @@ export const tasker = pgTable(
     index("tasker_state_idx").on(t.state),
     index("tasker_closed_type_idx").on(t.closedDispositionType),
     index("tasker_target_org_idx").on(t.targetOrgId),
+    index("tasker_routing_batch_idx").on(t.routingBatchId),
   ],
 );
 
@@ -837,4 +906,88 @@ export const outboxDelivery = pgTable(
     processedAt: timestamp("processed_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex("outbox_delivery_uq").on(t.outboxEventId, t.subscriber)],
+);
+
+/**
+ * In-app notices. read_at is updated when the recipient marks a row read, so this
+ * table is not append-only. The hash-chained audit log records the fan-out.
+ */
+export const notification = pgTable(
+  "notification",
+  {
+    id: id(),
+    recipientUserId: uuid("recipient_user_id").notNull().references(() => appUser.id),
+    taskerId: uuid("tasker_id").references(() => tasker.id),
+    subjectUserId: uuid("subject_user_id").references(() => appUser.id),
+    kind: text("kind").notNull(),
+    body: text("body").notNull(),
+    readAt: timestamp("read_at", { withTimezone: true }),
+    isSynthetic: isSynthetic(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    syntheticCheck("notification", t.isSynthetic),
+    check("notification_kind_ck", sql`${t.kind} in ('assigned','chain')`),
+    check("notification_body_ck", sql`length(trim(${t.body})) > 0`),
+    index("notification_recipient_idx").on(t.recipientUserId, t.createdAt),
+  ],
+);
+
+/** Simulated outbound mail. Append-only. Nothing is delivered to a real mailbox. */
+export const outboundEmail = pgTable(
+  "outbound_email",
+  {
+    id: id(),
+    notificationId: uuid("notification_id").notNull().references(() => notification.id),
+    recipientUserId: uuid("recipient_user_id").notNull().references(() => appUser.id),
+    toEmail: text("to_email").notNull(),
+    subject: text("subject").notNull(),
+    body: text("body").notNull(),
+    simulated: boolean("simulated").notNull().default(true),
+    isSynthetic: isSynthetic(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    syntheticCheck("outbound_email", t.isSynthetic),
+    check("outbound_email_simulated_ck", sql`${t.simulated} = true`),
+    check("outbound_email_domain_ck", sql`${t.toEmail} like '%@example.test'`),
+    index("outbound_email_created_idx").on(t.createdAt),
+  ],
+);
+
+/**
+ * Bytea documents table. Append-only file bytes for a tasker (metadata, sha256,
+ * uploader, timestamp). Distinct from the markdown document / document_version enclaves.
+ */
+export const storedDocument = pgTable(
+  "stored_document",
+  {
+    id: id(),
+    taskerId: uuid("tasker_id").notNull().references(() => tasker.id),
+    fileName: text("file_name").notNull(),
+    mime: text("mime").notNull(),
+    byteSize: integer("byte_size").notNull(),
+    sha256: text("sha256").notNull(),
+    content: bytea("content").notNull(),
+    uploadedBy: uuid("uploaded_by").notNull().references(() => appUser.id),
+    isSynthetic: isSynthetic(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    syntheticCheck("stored_document", t.isSynthetic),
+    check("stored_document_name_ck", sql`length(trim(${t.fileName})) > 0`),
+    check(
+      "stored_document_size_ck",
+      sql`${t.byteSize} > 0 and ${t.byteSize} <= ${STORED_DOCUMENT_MAX_BYTES} and ${t.byteSize} = octet_length(${t.content})`,
+    ),
+    check("stored_document_sha_ck", sql`length(${t.sha256}) = 64`),
+    check(
+      "stored_document_mime_ck",
+      sql`${t.mime} in (${sql.join(
+        STORED_DOCUMENT_MIMES.map((mime) => sql`${mime}`),
+        sql`, `,
+      )})`,
+    ),
+    index("stored_document_tasker_idx").on(t.taskerId),
+  ],
 );

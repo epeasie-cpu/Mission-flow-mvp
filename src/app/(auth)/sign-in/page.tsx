@@ -60,11 +60,26 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
               <label>
                 <span>Persona</span>
                 <select name="personaId" required>
-                  {personas.map((persona) => (
-                    <option key={persona.id} value={persona.id}>
-                      {persona.displayName} — {persona.billetLabel}
-                    </option>
-                  ))}
+                  {personas.some((persona) => persona.featured) ? (
+                    <optgroup label="Pitch demo">
+                      {personas
+                        .filter((persona) => persona.featured)
+                        .map((persona) => (
+                          <option key={persona.id} value={persona.id}>
+                            {persona.displayName} — {persona.billetLabel}
+                          </option>
+                        ))}
+                    </optgroup>
+                  ) : null}
+                  <optgroup label={personas.some((persona) => persona.featured) ? "Directory" : "Personas"}>
+                    {personas
+                      .filter((persona) => !persona.featured)
+                      .map((persona) => (
+                        <option key={persona.id} value={persona.id}>
+                          {persona.displayName} — {persona.billetLabel}
+                        </option>
+                      ))}
+                  </optgroup>
                 </select>
               </label>
               <label>

@@ -28,7 +28,8 @@ DECLARE t text;
 BEGIN
   FOREACH t IN ARRAY ARRAY[
     'audit_event', 'disposition', 'ai_artifact', 'ai_verification',
-    'suspense_plan', 'suspense_resolution', 'document_version'
+    'suspense_plan', 'suspense_resolution', 'document_version',
+    'stored_document', 'outbound_email'
   ] LOOP
     EXECUTE format('DROP TRIGGER IF EXISTS %I_no_update_delete ON %I', t, t);
     EXECUTE format('CREATE TRIGGER %I_no_update_delete BEFORE UPDATE OR DELETE ON %I
@@ -314,7 +315,8 @@ BEGIN
     GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO mf_app;
     REVOKE UPDATE, DELETE, TRUNCATE ON
       audit_event, disposition, ai_artifact, ai_verification,
-      suspense_plan, suspense_resolution, document_version
+      suspense_plan, suspense_resolution, document_version,
+      stored_document, outbound_email
     FROM mf_app;
     REVOKE DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public FROM mf_app; -- nothing is hard-deleted in MVP
     REVOKE UPDATE ON audit_chain_meta FROM mf_app;                        -- only mf_demo_reset (owner) bumps the epoch

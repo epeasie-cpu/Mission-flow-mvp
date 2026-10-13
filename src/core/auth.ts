@@ -69,6 +69,7 @@ export async function listPersonas(db: CoreDb) {
       email: user.email,
       billetLabel: user.billetLabel,
       availability: user.availability,
+      featured: user.featured,
       heldRoles: await listHeldRoles(db, user.id),
     });
   }

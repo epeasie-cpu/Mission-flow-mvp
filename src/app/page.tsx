@@ -33,6 +33,7 @@ export default async function HomePage() {
       <nav className="nav">
         <Link href="/work">Work path</Link>
         <Link href="/oversight">Oversight path</Link>
+        <Link href="/directory">Directory</Link>
         <Link href="/sign-in">Sign in</Link>
       </nav>
       <Panel>

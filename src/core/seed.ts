@@ -18,6 +18,7 @@ import {
 import { decideGate, openGates, routeToApproval } from "./gates";
 import { upsertEntry, validateEntry } from "./registry";
 import { requestSme, submitSme } from "./sme";
+import { seedNotionalDirectory } from "./seed-wing";
 
 /** US federal holidays for 2026 and 2027. Observed dates are used when the calendar day is a weekend. */
 export const FEDERAL_HOLIDAYS: { day: string; label: string }[] = [
@@ -68,6 +69,7 @@ export async function seedDemo(
   for (const item of FEDERAL_HOLIDAYS) {
     await db.insert(holiday).values(item).onConflictDoNothing();
   }
+  await seedNotionalDirectory(db);
   const [existing] = await db.select({ id: org.id }).from(org).where(eq(org.shortCode, "EXCOM")).limit(1);
   if (existing && !opts.reset) {
     const rows = await db.select({ title: tasker.title, ref: tasker.ref, state: tasker.state }).from(tasker);

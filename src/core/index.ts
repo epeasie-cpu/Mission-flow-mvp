@@ -29,6 +29,36 @@ export { MATRIX, MATRIX_COLUMNS, MATRIX_ROLES, can, matrixDecision } from "./pol
 export { businessDayStartUtc, computeSuspensePlan, subtractBusinessDays } from "./suspense";
 export { matchTasker } from "./match";
 export { seedDemo, FEDERAL_HOLIDAYS, SEED_NOW } from "./seed";
+export { seedNotionalDirectory, NOTIONAL_WING_NAME, NOTIONAL_WING_SHORT } from "./seed-wing";
+export {
+  createPerson,
+  getPersonProfile,
+  isChainLeader,
+  leadersToNotify,
+  listDirectory,
+  listDutyNames,
+  listOrgUnits,
+  updatePerson,
+} from "./personnel";
+export type { DirectoryFilters, DirectoryRow, PersonInput, PersonProfile } from "./personnel";
+export { criteriaIsEmpty, issueRoutedTasking, listRoutingBatch, matchActionOfficers, normalizeCriteria } from "./routing";
+export type { ActionOfficerMatch, IssuedTasker } from "./routing";
+export type { RoutingCriteria } from "../db/schema";
+export {
+  chainNotice,
+  listNotifications,
+  listOutboundMail,
+  markAllNotificationsRead,
+  markNotificationRead,
+  unreadNotificationCount,
+} from "./notify";
+export {
+  classifyUpload,
+  FILE_MAX_BYTES,
+  listStoredDocuments,
+  readStoredDocument,
+  uploadStoredDocument,
+} from "./files";
 export { runtimeDb } from "./runtime";
 export * as registry from "./registry";
 export * as taskers from "./lifecycle";

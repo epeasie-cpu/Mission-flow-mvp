@@ -18,6 +18,13 @@ export default async function WorkPage() {
         <p className="lede">
           Taskers visible to <strong>{app.session.displayName}</strong> acting as {roleLabel(app.session.actingRole)}.
         </p>
+        {app.session.actingRole === "originator" || app.session.actingRole === "tasking_authority" ? (
+          <p className="actions">
+            <Link className="btn primary" href="/work/taskers/new">
+              Create tasker
+            </Link>
+          </p>
+        ) : null}
       </Panel>
       {rows.length === 0 ? (
         <p className="panel">No taskers are visible to this acting role.</p>
