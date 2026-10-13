@@ -42,6 +42,14 @@ export function Panel({ children, hud = false, className = "" }: { children: Rea
   );
 }
 
+export function DemoUploadWarning() {
+  return (
+    <p className="warn" role="note">
+      Demo only. Do not upload real, CUI, or PII documents.
+    </p>
+  );
+}
+
 export function StatTile({ value, label, tone }: { value: number; label: string; tone: StateTone }) {
   return (
     <p className={`stat tone-${tone}`}>

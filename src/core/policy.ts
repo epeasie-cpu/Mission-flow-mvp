@@ -390,7 +390,14 @@ export async function can(db: CoreDb, actor: Actor, action: string, resource: Re
     case "docs.lock":
       return role === "approver" && (hasRole("approver") || hasGrant("approver"));
     case "admin.grant":
+    case "personnel.manage":
       return role === "system_admin" && hasGrant("system_admin");
+    case "files.upload":
+      if (role === "system_admin" || role === "task_controller") return false;
+      if (awarenessOnly) return false;
+      if (mine.length > 0) return true;
+      if (role === "originator" && row?.originatorId === actor.userId) return true;
+      return role === "tasking_authority" && hasGrant("tasking_authority") && orgOk;
     default:
       return false;
   }

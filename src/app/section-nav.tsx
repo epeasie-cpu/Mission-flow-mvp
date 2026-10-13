@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 const LINKS = [
   { href: "/work", label: "Work" },
   { href: "/oversight", label: "Oversight" },
+  { href: "/directory", label: "Directory" },
+  { href: "/outbox", label: "Outbox" },
 ] as const;
 
 export function SectionNav() {

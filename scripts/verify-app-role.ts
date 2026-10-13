@@ -20,6 +20,8 @@ const APPEND_ONLY = [
   "suspense_plan",
   "suspense_resolution",
   "document_version",
+  "stored_document",
+  "outbound_email",
 ];
 
 const app = new pg.Client({ connectionString: appUrl });

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Chakra_Petch, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
+import { runtimeDb, unreadNotificationCount } from "@/core";
 import { DISCLAIMER_FOOTER, HAZARD_BANNER } from "./copy";
 import "./globals.css";
 import { readAppSession } from "./session";
@@ -35,13 +36,21 @@ export const dynamic = "force-dynamic";
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const session = await readAppSession();
+  let unread = 0;
+  if (session) {
+    try {
+      unread = await unreadNotificationCount(runtimeDb(), session.session.userId);
+    } catch {
+      unread = 0;
+    }
+  }
   return (
     <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable}`}>
       <body>
         <div className="banner" role="status">
           <p>{HAZARD_BANNER}</p>
         </div>
-        <SessionBar session={session} />
+        <SessionBar session={session} unread={unread} />
         {children}
         <footer className="site-footer">{DISCLAIMER_FOOTER}</footer>
       </body>

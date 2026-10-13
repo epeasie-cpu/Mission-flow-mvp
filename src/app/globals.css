@@ -590,3 +590,199 @@ pre.draft {
   color: var(--t1);
   margin: 0.45rem 0 0;
 }
+
+textarea {
+  background: var(--s0);
+  color: var(--t1);
+  border: 1px solid var(--t3);
+  border-radius: 0;
+  padding: 0.48rem 0.55rem;
+  font-family: var(--font-sans), "IBM Plex Sans", sans-serif;
+  font-size: 0.95rem;
+  width: 100%;
+  min-height: 6.5rem;
+  resize: vertical;
+}
+
+.warn {
+  margin: 0.35rem 0 0.7rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--conflict);
+  background: color-mix(in srgb, var(--conflict) 14%, var(--s1));
+  color: var(--t1);
+  font-size: 0.92rem;
+}
+
+.bell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  color: var(--t1);
+  border: 1px solid var(--line2);
+  background: var(--s1);
+  text-decoration: none;
+}
+
+.bell:hover { color: var(--gold); border-color: var(--gold); }
+
+.bell svg { width: 16px; height: 16px; display: block; }
+
+.bell-count {
+  position: absolute;
+  top: -0.42rem;
+  right: -0.48rem;
+  min-width: 1.15rem;
+  padding: 0.05rem 0.28rem;
+  background: var(--gold);
+  color: var(--void);
+  font-family: var(--font-mono), "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 0.85rem;
+  align-items: flex-end;
+  margin: 0 0 1rem;
+}
+
+.filters label, .plain-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.filters label span, .plain-label > span {
+  font-family: var(--font-display), "Chakra Petch", sans-serif;
+  font-weight: 600;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t2);
+}
+
+.filters select, .filters input { min-width: 12rem; }
+
+.duty-row { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+.duty-chip {
+  border: 1px solid var(--line2);
+  color: var(--t2);
+  padding: 0.08rem 0.38rem;
+  font-size: 0.78rem;
+}
+
+.chain {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+}
+
+.chain li {
+  position: relative;
+  margin: 0;
+  padding: 0.5rem 0.75rem 0.55rem 1.15rem;
+  border-left: 2px solid var(--line2);
+}
+
+.chain li::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: 0.85rem;
+  width: 8px;
+  height: 8px;
+  background: var(--s0);
+  border: 2px solid var(--gold);
+}
+
+.chain li.is-self {
+  background: color-mix(in srgb, var(--gold) 8%, var(--s1));
+}
+
+.chain .who-line { font-weight: 600; }
+
+.tasker-create {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.tasker-create > aside {
+  position: sticky;
+  top: 0.75rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1.2fr;
+  gap: 0.75rem;
+}
+
+.tasker-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(18rem, 0.95fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.check-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.28rem;
+  max-height: 14rem;
+  overflow: auto;
+  padding: 0.45rem 0.5rem;
+  background: var(--s0);
+  border: 1px solid var(--t3);
+}
+
+.check-grid label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--t1);
+  font-size: 0.9rem;
+}
+
+.match-list { list-style: none; margin: 0.4rem 0 0; padding: 0; }
+
+.match-list li {
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.file-list { list-style: none; margin: 0.4rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.85rem; }
+
+.file-card {
+  border: 1px solid var(--line);
+  background: var(--s1);
+  padding: 0.75rem 0.85rem;
+}
+
+.preview-frame, .file-card img {
+  display: block;
+  width: 100%;
+  max-height: 280px;
+  margin-top: 0.55rem;
+  background: #f7f4ec;
+  border: 1px solid var(--line2);
+  object-fit: contain;
+}
+
+.preview-frame { height: 420px; }
+
+.note-unread { box-shadow: inset 3px 0 0 var(--gold); }
+
+@media (max-width: 900px) {
+  .tasker-create, .tasker-top, .form-row { grid-template-columns: 1fr; }
+}
